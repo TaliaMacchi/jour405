@@ -34,6 +34,6 @@ umd_fees_pct <- umd_fees |> mutate(pct_change = (`Fall 2026`- `Fall 2021`)/`Fall
 Write a few sentences about what you found in those percentages. What's the story here? What questions do you have?
 
 
-
+I think the story is that student sustainability saw the biggest percent change over the years with 150% increase from 2021 to 2026. The area saw only an $18 increase from $12 to $30. Other areas like the shuttle bus saw a lower percent 58% but costs over $100 more than what it did in 2021. My question is why are we seeing the highest percent change in the area that costs the least amount of money. How can an $18 increase make that much of a difference? 
 
 When you are done, save your work, switch to GitHub Desktop, then add, commit and push your changes to GitHub and submit the URL of the notebook in ELMS.
