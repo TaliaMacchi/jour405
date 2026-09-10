@@ -9,6 +9,7 @@ In this assignment, we will be working with a dataset containing information abo
 You will need to load the tidyverse library
 
 ```{r}
+library(tidyverse)
 ```
 
 Then you'll load the data from the web. The URL for the data is: https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/white_house_salaries_2026.csv. You will create a dataframe called `wh_salaries` that contains the data from this URL.
@@ -16,6 +17,7 @@ Then you'll load the data from the web. The URL for the data is: https://raw.git
 ### Task 2: Load the Data and Describe It
 
 ```{r}
+wh_salaries <- read_csv('https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/white_house_salaries_2026.csv')
 ```
 ### Task 3: Describe the Data
 
@@ -23,12 +25,14 @@ You should examine that dataframe carefully by clicking on it in the Environment
 
 ANSWER HERE
 
+From a reporting standpoint, I noticed that salaries range from $0 to $195,200, with positions like the Chief of Staff earning the highest. The $0 salaries could cause problems for analysis because if they are included when calculating averages, they would pull down the mean, making the white house salary appear lower than it actually is. 
+
 ### Task 4: Calculate the Mean and Median of the Salaries
 
 Write code to calculate the mean and median of the salaries in the dataset using the `summarize()` function. You don't need to make a new dataframe, just display the results.
 
 ```{r}
-
+wh_salaries |> summarize(mean_salary = mean(SALARY), median_salary = median(SALARY))
 ```
 
 ### Task 5: Add in the minimum and maximum salaries
@@ -36,17 +40,19 @@ Write code to calculate the mean and median of the salaries in the dataset using
 Take the code you just wrote and add in the minimum and maximum salaries (the functions for that are `min()` and `max()`). Your results should show four columns: mean_salary, median_salary, min_salary, max_salary.
 
 ```{r}
-
+wh_salaries |> summarize(mean_salary = mean(SALARY), median_salary = median(SALARY), min_salary = min(SALARY), max_salary = max(SALARY))
 ```
 
 ### Task 6: Describe the Results
 
 Write a couple of sentences describing the results of your analysis. What do the mean and median salaries tell you about the data? What do the minimum and maximum salaries tell you? Are there any outliers in the data?
 
-ANSWER HERE
+The mean and median salaries tell us how salaries are distributed. The minimum salary is $0 while the maximum salary is $197,200, showing us a large range. The mean salary is $112,702.70 while the median salary is $109.243, showing us that the average is higher than the middle payrate. This also sugguests that higher salaries may be pulling the mean upwards and because the mean is lower than the median, the $0 salaries could be pulling the mean down. The $0 salaries stand out as an outlier because they are unpaid employees, which could affect the overall average. 
 
 ### Task 7: Story Idea
 
 Based on the data, what is your best story idea? What is the next step you would take to develop that story idea?
+
+I think a good story idea would be looking at what determines how much White House staff employees get paid. The average employee earns $122,703 but salaries range from $0 to $197,200. Why do some employees earn nothing and some earn almost $200,000? My next steps would be to look at job responsibilities of each staff member to see if their position description aligns with the price they're getting paid. 
 
 ANSWER HERE
