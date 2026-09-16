@@ -39,7 +39,7 @@ team_aces |> mutate(percentile = ntile(total_aces, 100))
 
 Write a couple of sentences that puts Maryland into context with the other teams in the dataset. You can do some Internet research to help with this.
 
-
+Maryland Woman's Volleyball placed in the 95th percentile of teams in the country for its 2024 season. With 223 wins in the Big Ten, Maryland ranks as one of the more successful volleyball teams in the conference. Indiana University was placed in the 98th percentile, with the other Big Ten teams placing in the 80th percentiles and lower. 
 
 When you are done, save your work, switch to GitHub Desktop, then add, commit and push your changes to GitHub and submit the URL of the notebook in ELMS.
 
