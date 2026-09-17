@@ -9,6 +9,9 @@ In this assignment, we will be working with a dataset of total crimes reported b
 You will need to load the tidyverse library and the janitor library
 
 ```{r}
+library(tidyverse)
+#install.packages("janitor")
+library(janitor)
 ```
 
 Then you'll load the data from the web. The URL for the data is: https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/md_cities_crime_2019_2020.csv. You will create a dataframe called `md_cities` that contains the data from this URL.
@@ -16,12 +19,17 @@ Then you'll load the data from the web. The URL for the data is: https://raw.git
 ### Task 2: Load the Data
 
 ```{r}
+md_cities <- read_csv("https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/md_cities_crime_2019_2020.csv")
 ```
 ### Task 3: Calculating Rates
 
 Calculate violent and property crime rates for each city for both years using `mutate()`. You'll create four new columns: `violent_rate_2019`, `property_rate_2019`, `violent_rate_2020`, and `property_rate_2020`. You'll need to figure out the proper unit rate, given that there are varying populations. There's no perfect choice; choose the one that works best for you. Save the results to a new dataframe called `md_cities_rates`.
 
 ```{r}
+md_cities_rates <- md_cities |> mutate(violent_rate_2019 = violent2019 / pop2019 * 10000,
+                                       property_rate_2019 = property2019 / pop2019 * 10000,
+                                      violent_rate_2020 = violent2020 / pop2020 * 10000,
+                                       property_rate_2020 = property2020 / pop2020 * 10000, )
 ```
 
 ### Task 4: Describe the Rates
@@ -30,12 +38,15 @@ Examine the new dataframe, `md_cities_rates`, by clicking on it in the Environme
 
 ANSWER HERE
 
+In 2019, the Maryland city with the highest violent crime was Baltimore with 183 crimes per 10,000 people. In 2020, Ocean City reported 240 crimes per 10,000 people. As for property crime, Ocean City lead for the highest crime rates with 1037 crimes per 10,000 people in 2019 and 1213 crimes per 10,000 people in 2020. Ocean City doesn't have a large population, but there is a lot of crime occuring there. Why? Many other smaller populated cities also have a high crime rate so I believe that is the story here. For example, the small city of Kitzmiller had a high violent crime rate in 2019 with 99 crimes per 10,000 people which went up to 128 crimes in 2020. 
 
 ### Task 5: Calculate Percentage Change
 
 Let's add two percentage change columns to your dataframe: one for violent crime rates and one for property crime rates. You'll calculate the percentage change between 2019 and 2020 for each city. Save the results to a new dataframe called `md_cities_change`.
 
 ```{r}
+md_cities_change <- md_cities_rates |> 
+  mutate(violent_change = (violent_rate_2020 - violent_rate_2019) / violent_rate_2019 * 100, property_change = (property_rate_2020 - property_rate_2019) / property_rate_2019 * 100)
 ```
 
 ### Task 7: Describe Percentage Changes
@@ -44,11 +55,19 @@ Look at the `md_cities_change` dataframe by clicking on it in the Environment ta
 
 ANSWER HERE
 
+I think the more interesting part in this data is the outliers. There are many cities with their percentage change being "Not a Number" because many cities had zero crimes in 2019 and also in 2020. Some cities have an "infinite" or "undefined" percent change because they had zero crimes in 2019 and then had some in 2020, so the percent change would always end up being zero. I think this would be a good story, because if you look at the percent change for these cities, some would assume no percent change means no crime, but in reality, the crime is actually going up. For example, in Charlestown, there violent crime rate was zero, but in 2020 it was 17 per 10,000 people. However the percent change shows it as "Inf" because the percent change calculation gives us zero.  Still, there are many strong story ideas within this data. 
+
 ### Task 8: Tell the Best Story
 
 Write up a lede and nutgraf of a story with the _best_ story idea you've found in this assignment. The lede should be a single sentence that summarizes the most important information in the data. The nutgraf should be a paragraph that provides more context and explains why the data is important.
 
 ANSWER HERE
+
+Ocean City, Md. saw a spike in violent crime in 2020, with rates climbing 83% from last year.
+
+The city's violent crime rate nearly doubled from 2019 to 2020, with crimes per 10,000 residents increasing from 131 to 240. According to People Magazine, many people flocked the beaches as the state's stay at home order was lifted on May 15, 2020. Because more people were outside after the COVID-19 lock down, more violent crime occurred. 
+
+
 
 ### Task 9: Save Your Work and Put it on GitHub
 
