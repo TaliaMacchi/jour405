@@ -32,7 +32,7 @@ library(lubridate)  # For working with dates
 Load the accident data from our CSV file at https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/daily_accidents.csv into a dataframe called `accidents`:
 
 ```{r load-data}
-
+accidents <- read_csv ("https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/daily_accidents.csv")
 ```
 
 ## Data Exploration
@@ -68,7 +68,7 @@ ggplot(accidents, aes(x = date, y = total)) +
 ### Task 2 (3 points)
 Looking at the time series visualization above, identify at least two noticeable patterns or anomalies. What questions would you want to investigate further based on this initial view of the data? How might these visual patterns translate into potential story angles?
 
-ANSWER HERE
+I would want to investigate why there is a drop in accidents around 2020. I assume this is because of COVID-19 as fewer people were driving. An angel of this story could be how the pandemic changed accident patterns and how quickly it went back up to normal after the stay at home order was mandated. Were people too excited to drive? Another aspect that I would want to look at is that accidents increased from 2017 to 2020. What contributed to this increased? And why is it a more of a steady rate from 2022 to 2024? Have the roads become safer? 
 
 The daily data is quite noisy, so let's also look at weekly patterns:
 
@@ -107,6 +107,8 @@ ggplot(accidents, aes(x = day_of_week, y = total)) +
 ### Task 3 (2 points)
 Based on the day-of-week analysis, which day(s) have the highest and lowest average accidents? Why might these patterns exist?
 
+Friday has the highest average number of accidents and Monday has the lowest. More people are on the roads on Friday, possibly traveling for the weekend, shopping, going out or just being excited that the week is over. It's the opposite for Mondays. 
+
 ANSWER HERE
 
 ## Calculating Z-Scores
@@ -119,9 +121,9 @@ Now, using the accidents dataframe, add three columns using `mutate()`: mean_acc
 # Calculate z-scores for total accidents
 accidents <- accidents |>
   mutate(
-    mean_accidents = REPLACE_ME,
-    sd_accidents = REPLACE_ME,
-    z_score = (REPLACE_ME - REPLACE_ME) / REPLACE_ME
+    mean_accidents = mean(total),
+    sd_accidents = sd(total),
+    z_score = (total - mean_accidents) / sd_accidents
   )
 
 # Display the data with z-scores
@@ -156,7 +158,7 @@ unusual_days |>
 ### Task 5 (3 points)
 Choose one of the top 10 unusual days and research what might have happened on that date. Look for weather events, holidays, major incidents, or other factors that could explain the unusual number of accidents. Briefly describe your findings and how you would incorporate this context into a story.
 
-ANSWER HERE
+On Oct. 29, 2021 there was a storm that hit Maryland with strong winds, rain and flooding. Maryland officials warned drivers that the roads were being affected by fallen trees and flooding, which could have contributed to the spike in accidents. I could use this information to explain that the spike was not random and also compare this day to other days with the same whether conditions and see how the amount of accidents differ. 
 
 Let's visualize these unusual days:
 
@@ -186,9 +188,9 @@ Let's calculate z-scores that account for day of week patterns based on the same
 accidents <- accidents |>
   group_by(day_of_week) |>
   mutate(
-    dow_mean = REPLACE_ME,
-    dow_sd = REPLACE_ME,
-    dow_z_score = (REPLACE_ME - REPLACE_ME) / REPLACE_ME
+    dow_mean = mean(total),
+    dow_sd = sd(total),
+    dow_z_score = (total - dow_mean) / dow_sd
   ) |>
   ungroup()
 
@@ -207,7 +209,7 @@ unusual_dow |>
 ### Task 7 (3 points)
 Compare the days that have extreme z-scores overall versus those with extreme day-of-week z-scores. How do these lists differ? What journalistic insights can you draw from comparing these two different approaches to measuring "unusual" days?
 
-ANSWER HERE
+These lists differ because overall z-scores compare each day to all the others while day of the week z-scores compare one day to what is typical for that weekday. A day of the week z-score gives us more context as it accounts for the normal weekly patterns. For example, a high number of accidents on a Friday would not be unusual because Fridays normally have more accidents than other days of the week. Or, vice versa, a high number of accidents on Monday would be unsual as Mondays typically have less accidents.  This can help determine whether a day is unusual because of typical patterns or because something significant happened that is worth looking more into. 
 
 Let's see how many unusual days we have for each day of the week:
 
@@ -286,7 +288,7 @@ unusual_monthly |>
 ### Task 8 (2 points)
 Based on the monthly pattern analysis, which months have the highest and lowest average accidents? Develop a hypothesis about why these seasonal patterns exist.
 
-ANSWER HERE
+October has the highest and January has the lowest. Accidents increase in the fall because more people are on the road after summer, traveling home and getting back into their routine.  The amount of hours of sunlight also start to go down. January might have fewer accidents because people are tried after the holidays and stay at home more when it is cold out. 
 
 ## Identifying Extreme Outliers
 
@@ -311,9 +313,13 @@ if(nrow(extreme_outliers) > 0) {
 ### Task 9 (2 points)
 For the extreme outliers identified (z-scores beyond ±3), what do they have in common?
 
-ANSWER HERE
+Most of the extreme outliers occur Fridays and Saturdays. Most also fall in the spring or fall. 
 
 ## Your Best Story Pitch
 
 ### Task 10 (5 points)
 Based on all the analyses performed, craft your best story pitch, including a headline and lede. Be sure to include what kinds of sources/people you'd talk to for the story.
+
+Lede: Data from 2017 to 2025 shows that car accidents Prince George's County are highest on Fridays during the fall, with October having the highest monthly average. 
+
+Pitch: Since it's the start of October, I think a story on fall accident patterns would be timely and impactful. I would look into traffic patterns, whether, events and driver's moods. I also could potentially predict what this fall is going to look like. I would talk to transportation officials, police, local drivers and hospital workers. 
