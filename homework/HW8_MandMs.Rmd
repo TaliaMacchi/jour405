@@ -6,26 +6,52 @@ In this assignment, you'll be picking up where you left off with the M&Ms activi
 
 ### Task 1: Load the tidyverse
 
+```{r}
+library(tidyverse)
+```
+
 
 ### Task 2: Load the M&Ms dataset from https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/mandms.csv
 
+```{r}
+mandms <- read_csv("https://raw.githubusercontent.com/dwillis/jour405/refs/heads/main/data/mandms.csv")
+
+```
+
 
 ### Task 3: Sample 5 rows of data from the dataset
+
+```{r}
+set.seed(42)
+sample_5 <- mandms |> sample_n(5)
+mean(sample_5$total)
+```
 
 
 ### Task 4: Calculate the mean age and standard deviation of the sample, using either the red or black number of M&Ms
 
 
+```{r}
+mean(sample_5$red)
+sd(sample_5$red)
+```
 ### Task 5: Calculate the mean age and standard deviation of the population, using the same measure as in Task 4
 
+```{r}
+mean(mandms$red)
+sd(mandms$red)
+```
 
 ### Task 6: Compare the sample and population statistics
 
 Compare the two sets of means and standard deviations. Are they similar?
 
+They are somewhat similar. The sample mean is 79.6 and the population mean is 72.98. The sampls SD is 10.06 and the population SD is 16.46. 
+
 ### Task 7: Describe the results
 
 Write a few sentences about what you found in the data. What does this tell you about the M&Ms dataset and about the act of random sampling?
 
+The sample had a higher mean the the population but a lower SD. The number of red m&ms varied more across the population than in the sample. This shows that random sampling doesn't always represent the population perfectly, especially when the sample size is so small. 
 
 When finished, save your work, switch to GitHub Desktop, then add, commit and push your changes to GitHub and submit the URL of the notebook in ELMS.
