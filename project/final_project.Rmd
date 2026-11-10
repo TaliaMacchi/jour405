@@ -1,0 +1,92 @@
+---
+title: "Final Project"
+name: Talia Macchi
+---
+### Load data
+```{r}
+library(tidyverse)
+
+billboard <- read_csv(file.choose())
+
+glimpse(billboard)
+```
+
+### Clean data
+```{r}
+billboard <- billboard |>
+  rename(
+    last_week = `Last Week`,
+    peak_position = `Peak Position`,
+    weeks_on_chart = `Weeks in Charts`
+  )
+```
+
+
+### Song's debut date
+```{r}
+song_debuts <- billboard |>
+  group_by(Song, Artist) |>
+  summarise(
+    debut_date = min(Date, na.rm = TRUE)
+  )
+```
+
+
+
+### Each song's peak position 
+```{r}
+song_peaks <- billboard |>
+  group_by(Song, Artist) |>
+  summarise(
+    peak_position = min(Rank, na.rm = TRUE)
+  )
+```
+
+### How many weeks each song was on the chart
+```{r}
+song_weeks <- billboard |>
+  group_by(Song, Artist) |>
+  summarise(
+    total_weeks = n()
+  )
+```
+### Combine data sets
+```{r}
+song_summary <- song_debuts |>
+  left_join(song_peaks, by = c("Song", "Artist")) |>
+  left_join(song_weeks, by = c("Song", "Artist"))
+```
+
+### Find each song's debut month
+```{r}
+song_summary <- song_summary |>
+  mutate(
+    debut_month = month(debut_date)
+  )
+```
+### Assign month to seasons 
+```{r}
+song_summary <- song_summary |>
+  mutate(
+    season = case_when(
+      debut_month >= 6 & debut_month <= 8 ~ "Summer",
+      debut_month >= 9 & debut_month <= 11 ~ "Fall",
+      debut_month == 12 | debut_month <= 2 ~ "Winter",
+      debut_month >= 3 & debut_month <= 5 ~ "Spring"
+    )
+  )
+```
+
+
+```{r}
+billboard |>
+  summarise(
+    earliest_date = min(Date),
+    latest_date = max(Date)
+  )
+```
+
+The data contains information about songs that have been on the Billboard Hot 100 since July 6, 1958 to May, 5, 2022. I organized the data to show the song title, artist, debut date, peak position, total weeks on the chart, debut month and season. The most important columns for my project will be debut date, season, total weeks and peak positions. One important piece of information I am missing, but not sure I really need, is each song's actual release date...since I'm seeing whether the season in which a song first appears on the Billboard Hot 100 chart has a relationship with its success rather than it's actual release date. Streaming numbers could also be interesting data to include as they would help show why certain songs perform better on the chart. I'm wondering how to account for songs that are on the Billboard Hot 100 for multiple seasons. I want to make sure I'm focusing on the season of it's debut rather than the season it became most popular. What do you think is the best way to compare success across seasons and do you think the song's release date and streaming numbers is necessary to include? 
+
+
+
