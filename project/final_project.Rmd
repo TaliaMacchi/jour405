@@ -6,10 +6,75 @@ name: Talia Macchi
 ```{r}
 library(tidyverse)
 
-billboard <- read_csv(file.choose())
+billboard <- read_csv(file.choose()) |>
+  filter(
+    !Song %in% c(
+      "All I Want for Christmas Is You",
+      "Last Christmas",
+      "Jingle Bell Rock",
+      "Rockin' Around the Christmas Tree",
+      "Feliz Navidad",
+      "White Christmas",
+      "It's the Most Wonderful Time of the Year",
+      "The Christmas Song",
+      "Sleigh Ride",
+      "A Holly Jolly Christmas"
+    )
+  )
 
 glimpse(billboard)
 ```
+```{r}
+library(lubridate)
+
+charts <- billboard |>
+  mutate(Date = as.Date(Date)) |>
+  filter(!is.na(Date))
+
+data_start <- min(charts$Date)
+data_end <- max(charts$Date)
+
+# Find each song's first chart appearance.
+song_debuts <- charts |>
+  group_by(Song, Artist) |>
+  summarise(
+    debut_date = min(Date),
+    .groups = "drop"
+  ) |>
+  mutate(first_year_end = debut_date %m+% years(1))
+
+# Keep songs whose first year is covered by the dataset.
+# Songs on the first chart date may have debuted earlier.
+eligible_songs <- song_debuts |>
+  filter(
+    debut_date > data_start,
+    first_year_end <= data_end
+  )
+
+# Keep chart appearances before each song's one-year anniversary.
+first_year_appearances <- charts |>
+  inner_join(eligible_songs, by = c("Song", "Artist")) |>
+  filter(Date >= debut_date, Date < first_year_end)
+
+# Calculate first-year chart performance for each song.
+song_first_year <- first_year_appearances |>
+  group_by(Song, Artist, debut_date) |>
+  summarise(
+    first_year_weeks = n_distinct(Date),
+    first_year_peak = if (all(is.na(Rank))) {
+      NA_real_
+    } else {
+      min(Rank, na.rm = TRUE)
+    },
+    .groups = "drop"
+  ) |>
+  mutate(
+    debut_month = month(debut_date),
+    summer_group = if_else(debut_month %in% c(6, 7, 8), "Summer", "Other"),
+    first_year_top_10 = first_year_peak <= 10
+  )
+```
+
 
 ### Clean data
 ```{r}
@@ -86,57 +151,54 @@ billboard |>
   )
 ```
 
-The data contains information about songs that have been on the Billboard Hot 100 since July 6, 1958 to May, 5, 2022. I organized the data to show the song title, artist, debut date, peak position, total weeks on the chart, debut month and season. The most important columns for my project will be debut date, season, total weeks and peak positions. One important piece of information I am missing, but not sure I really need, is each song's actual release date...since I'm seeing whether the season in which a song first appears on the Billboard Hot 100 chart has a relationship with its success rather than it's actual release date. Streaming numbers could also be interesting data to include as they would help show why certain songs perform better on the chart. I'm wondering how to account for songs that are on the Billboard Hot 100 for multiple seasons. I want to make sure I'm focusing on the season of it's debut rather than the season it became most popular. What do you think is the best way to compare success across seasons and do you think the song's release date and streaming numbers is necessary to include? 
 
-### Test Ideas/Notes
-- I think I will filter out songs released after spring 2022 and holiday songs, as Prof. Willis suggested in the comments of the previous project assignment. I'm not sure how I will filter out holiday songs though. 
-- Prof. Willis suggested to focus on songs that first made the list in the summer and compare those songs to ones that first debuted in other seasons like this: 
 
-song_summary <- song_summary |>
-  mutate(
-    debut_month = lubridate::month(debut_date),
-    summer_group = if_else(
-      debut_month %in% c(6, 7, 8),
-      "Summer",
-      "Other"
-    )
-  )
-  
-  song_summary |>
+
+##11/22 - trials, errors and lessons 
+
+##Songs that debut in the summer reach better chart positions in their first year than songs that debut in other seasons
+
+##songs that first made the list in the summer and compare those songs to ones that first debuted in other seasons *I defined a song's debut as the first week it appeared on the Billboard in my dataset. Songs that first appeared in june, july and august, were classified as summer debuts. 
+
+```{r}
+song_first_year |>
   group_by(summer_group) |>
   summarise(
     songs = n(),
-    mean_weeks = mean(total_weeks, na.rm = TRUE),
-    median_weeks = median(total_weeks, na.rm = TRUE),
-    sd_weeks = sd(total_weeks, na.rm = TRUE)
+    mean_weeks = mean(first_year_weeks),
+    median_weeks = median(first_year_weeks),
+    sd_weeks = sd(first_year_weeks),
+    mean_peak = mean(first_year_peak, na.rm = TRUE),
+    median_peak = median(first_year_peak, na.rm = TRUE)
   )
-
-- I also think I could see if songs that debut in the summer reach higher chart positions than songs that debut in other seasons. We did something similar to this when looking at PG county car accidents as we calculated the averages across different time periods. 
-
+```
+## songs that debut in the summer reach higher chart positions than songs that debut in other seasons
+```{r}
 song_summary |>
-  group_by(season) |>
+  group_by(summer_group) |>
   summarise(
     songs = n(),
     mean_peak = mean(peak_position, na.rm = TRUE),
     median_peak = median(peak_position, na.rm = TRUE)
   )
+```
 
-- I'm wondering if songs that debut in the summer are more likely to be a top 10 song compared to songs that debut in other seasons. I asked chatGPT how to run this test because I don't recall doing a similar test in previous assignments. I told chatGPT the data I have in the song summary table and it told me to compare the percent of songs that reached the Top 10 out of all songs that debuted in each season. This would allow me to compare the success rates across seasons even if the amount of songs each season is different. This is the code it gave me:
+##if songs that debut in the summer are more likely to be a top 10 song compared to songs that debut in other seasons.
+```{r}
 
 song_summary |>
   mutate(
     top_10 = if_else(peak_position <= 10, 1, 0)
   ) |>
-  group_by(season) |>
+  group_by(summer_group) |>
   summarise(
     songs = n(),
     top_10_songs = sum(top_10),
     percent_top_10 = mean(top_10) * 100
   )
-  
-- Like the test above, I could compare songs that reached No. 1 across each season. This is the test I would run:
-
-
+```
+##could compare songs that reached No. 1 across each season
+```{r}
 song_summary |>
   mutate(
     number_one = if_else(peak_position == 1, 1, 0)
@@ -147,10 +209,9 @@ song_summary |>
     number_one_songs = sum(number_one),
     percent_number_one = mean(number_one) * 100
   )
-
-- Similar to the HW11 assignment where we calculated percentages within a group, I could look at the percentage of songs that stay on the chart for a least 20 weeks. This would help me see if summer songs are more likely to stay on the charts longer. I also asked ChatGPT to help me code this. This is the test it sugguested I run:
-
-
+```
+##I could look at the percentage of songs that stay on the chart for a least 20 weeks
+```{r}
 song_summary |>
   mutate(
     long_running = if_else(total_weeks >= 20, 1, 0)
@@ -161,16 +222,15 @@ song_summary |>
     long_running_songs = sum(long_running),
     percent_long_running = mean(long_running) * 100
   )
+```
+## see if the success of summer songs changed over time by grouping songs into the decade they debuted it and compare the amount of weeks they were on the chart and their peak positions.
 
-- In the PG County car accidents assignment, we looked at data from multiple years to see if there was a change. I think I could see if the success of summer songs changed over time by grouping songs into the decade they debuted it and compare the amount of weeks they were on the chart and their peak positions. This would help me see whether summer songs have consistently been more succssful or if their success has changed over time. I asked ChatGPT how to group the songs into decades and it said to use "lubridate::year()" to create a decade column. 
-
+```{r}
 song_summary <- song_summary |>
   mutate(
     debut_year = lubridate::year(debut_date),
     decade = (debut_year %/% 10) * 10
   )
-
-I would then have to compare the songs across decades. 
 
 
 song_summary |>
@@ -182,27 +242,29 @@ song_summary |>
     mean_peak = mean(peak_position, na.rm = TRUE)
   )
 
-- As for filtering out holiday songs, I asked ChatGPT how to go about this by asking "How should I filter out holiday songs in my data set" and it said "Filter out common holiday songs." So, similar to the Soccer Fouls activity, I would filter out data as I load the Tidyverse. This is what I have now, but I look futher into the data to pull out more holiday songs. 
+```
 
+## Welch t-test to compare mean chart weeks between summer and other debut months 
+```{r}
+t.test(first_year_weeks ~ summer_group, data = song_first_year)
+```
 
-library(tidyverse)
-
-billboard <- read_csv(file.choose()) |>
-  filter(
-    !Song %in% c(
-      "All I Want for Christmas Is You",
-      "Last Christmas",
-      "Jingle Bell Rock",
-      "Rockin' Around the Christmas Tree",
-      "Feliz Navidad",
-      "White Christmas",
-      "It's the Most Wonderful Time of the Year",
-      "The Christmas Song",
-      "Sleigh Ride",
-      "A Holly Jolly Christmas"
-    )
+##how many songs reached top ten in summer vs other 
+```{r}
+top_10_counts <- song_first_year |>
+  filter(!is.na(first_year_top_10)) |>
+  group_by(summer_group) |>
+  summarise(
+    top_10_songs = sum(first_year_top_10),
+    total_songs = n()
   )
+```
 
-glimpse(billboard)
-
+##two proportion test: compare first year top 10 percentages 
+```{r}
+prop.test(
+  x = top_10_counts$top_10_songs,
+  n = top_10_counts$total_songs
+)
+```
 
